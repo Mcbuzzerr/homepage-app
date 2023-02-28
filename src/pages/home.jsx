@@ -1,6 +1,7 @@
 /** @jsxImportSource @emotion/react */
-import React from "react";
+import { useState } from "react";
 import Bubble from "../components/bubble.jsx"
+import Window from "../components/window.jsx"
 // import { redirect } from 'react-router-dom';
 // import { useOutletContext } from 'react-router-dom';
 // import { useLoaderData } from 'react-router-dom';
@@ -16,9 +17,23 @@ function Home() {
     const footerPadding = '1vh';
     const footerWidth = 'calc(100vw' + ' - ' + footerPadding + ' - ' + footerPadding + ')';
 
+    let window = null;
+
     const profileClickHandler = () => {
         console.log('Profile clicked');
         // add a window like div that has a profile switcher
+        // This doesn't work
+        // follow this tutorial: https://medium.com/@daniela.sandoval/creating-a-popup-window-using-js-and-react-4c4bd125da57
+        window = (
+            <Window 
+                width={"200px"} 
+                height={"400px"} 
+                className={"TestWindow"}
+                doXButton={false}
+            >
+
+            </Window>
+        )
     }
 
     return (
@@ -50,7 +65,7 @@ function Home() {
                 width: '100vw',
                 backgroundColor: '#58e'
             }}>
-
+                {window}
             </main>
             <footer style={{
                 height: footerHeight,

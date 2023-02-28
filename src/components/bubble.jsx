@@ -1,5 +1,32 @@
 /** @jsxImportSource @emotion/react */
 function Bubble({ children, className, imageURL, onClick, ...props }) {
+  const tint = 6;
+  const mouseOverHandler = (event) => {
+    console.log('Mouse over');
+    event.target.style.backgroundColor = `rgba(0, 0, 50, 0.${tint})`;
+    console.log(event.target.style.backgroundColor)
+    event.target.addEventListener('mousedown', mouseDownHandler);
+    event.target.addEventListener('mouseout', mouseOutHandler);
+  }
+
+  const mouseOutHandler = (event) => {
+    console.log('Mouse out')
+    console.log(tint - 2)
+    event.target.style.backgroundColor = `rgba(0, 0, 50, 0.${tint - 2})`;
+    event.target.removeEventListener('mousedown', mouseDownHandler); // I think this is just optimization? Possibly does nothing at all?
+    event.target.removeEventListener('mouseout', mouseOutHandler); // I think this is just optimization? Possibly does nothing at all?
+  }
+
+  const mouseDownHandler = (event) => {
+    event.target.style.backgroundColor = `rgba(0, 0, 50, 0.${tint + 2})`;
+    event.target.addEventListener('mouseup', mouseUpHandler);
+  }
+
+  const mouseUpHandler = (event) => {
+    event.target.style.backgroundColor = `rgba(0, 0, 50, 0.${tint})`;
+    event.target.removeEventListener('mouseup', mouseUpHandler); // I think this is just optimization? Possibly does nothing at all?
+  }
+
   return (
     <div 
     className={"Bubble"} 
@@ -13,8 +40,7 @@ function Bubble({ children, className, imageURL, onClick, ...props }) {
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
     }}
-    
-    {...props}>
+    >
       {children}
       <div 
         className="lens"
@@ -24,23 +50,7 @@ function Bubble({ children, className, imageURL, onClick, ...props }) {
             borderRadius: '50%',
             backgroundColor: 'rgba(0, 0, 50, 0.4)',
         }}
-        onMouseOver={(event) => {
-          const tint = 0.6;
-          console.log('Mouse over');
-          event.target.style.backgroundColor = `rgba(0, 0, 50, ${tint})`;
-          event.target.addEventListener('mousedown', () => {
-              event.target.style.backgroundColor = `rgba(0, 0, 50, ${tint + 0.2})`;
-              event.target.addEventListener('mouseup', () => {
-                  event.target.style.backgroundColor = `rgba(0, 0, 50, ${tint})`;
-                  event.target.removeEventListener('mouseup', () => {}); // I think this is just optimization? Possibly does nothing at all?
-              });
-          });
-          event.target.addEventListener('mouseout', () => {
-              event.target.style.backgroundColor = `rgba(0, 0, 50, ${tint - 0.2}})`;
-              event.target.removeEventListener('mouseout', () => {}); // I think this is just optimization? Possibly does nothing at all?
-              event.target.removeEventListener('mousedown', () => {}); // I think this is just optimization? Possibly does nothing at all?
-          });
-      }}
+        onMouseOver={mouseOverHandler}
       onClick={onClick}
       >
       </div>
