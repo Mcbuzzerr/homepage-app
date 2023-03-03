@@ -74,7 +74,7 @@ services:
   #   container_name: watchlist-controller
   #   build: ./WatchList-Controller
   #   ports:
-  #     - "8001:8000"
+  #     - "8020s:8000"
   #   environment:
   #     - MONGO_URI=mongodb://homepage-mongo:27017
   #   volumes:
@@ -83,19 +83,19 @@ services:
   #     - homepage
   #   depends_on:
   #     - broker
-  # profiles-controller:
-  #   container_name: Profiles-controller
-  #   build: ./Profiles-Controller
-  #   ports:
-  #     - "8001:8000"
-  #   environment:
-  #     - MONGO_URI=mongodb://homepage-mongo:27017
-  #   volumes:
-  #     - ./Profiles-Controller:/app
-  #   networks:
-  #     - homepage
-  #   depends_on:
-  #     - broker
+  profiles-controller:
+    container_name: Profiles-controller
+    build: ./Profiles-Controller
+    ports:
+      - "8010:8000"
+    environment:
+      - MONGO_URI=mongodb://homepage-mongo:27017
+    volumes:
+      - ./Profiles-Controller:/app
+    networks:
+      - homepage
+    depends_on:
+      - broker
   mongo:
     container_name: homepage-mongo
     image: mongo:latest
