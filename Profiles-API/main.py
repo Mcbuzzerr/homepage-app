@@ -70,7 +70,7 @@ async def register_Profile(profile: Profile_in):
 @app.get("/profile/{profileId}", tags=["Profiles"], response_model=Profile)
 async def get_Profile(profileId: PydanticObjectId):
     # Get a profile from the database - this is a read-only operation so no kafka
-    profile = await Profile.find_one({"_id": profileId})
+    profile = await Profile.get(profileId)
     if profile is None:
         raise HTTPException(status_code=404, detail="Profile not found")
     return profile
@@ -103,6 +103,3 @@ async def delete_Profile(profileId: PydanticObjectId):
         "profile-delete",
         callback=receipt,
     )
-
-
-# vvv This is better done in the edit route right? vvv

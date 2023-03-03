@@ -1,10 +1,11 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException, status
 from beanie import init_beanie, PydanticObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
 from decouple import config
 from models.profile import Profile, Profile_in
 from models.watchList import WatchList, MediaItem, MediaType
 
+import json
 import asyncio
 import confluent_kafka
 from confluent_kafka import KafkaException, Producer
@@ -48,14 +49,15 @@ async def read_root():
 
 # CRUD operations for watchLists
 # Create
-@app.post("/watchlist/create", status_code=201, tags=["WatchLists"])
-async def create_WatchList(watchList: WatchList):
+@app.post("/watchlist/create/{profileId}", status_code=201, tags=["WatchLists"])
+async def create_WatchList(profileId: PydanticObjectId, watchList: WatchList):
     # Produce a new watchList to kafka for the database to create
-    encodedWatchList = watchList.toJSON().encode("utf-8")
-    print(encodedWatchList)
+    message = {"profileId": profileId, "watchList": watchList}
+    message = json.dumps(message).encode("utf-8")
+    print(message)
     app.Producer.produce(
         "watchlists",
-        encodedWatchList,
+        message,
         "watchlist-create",
         callback=receipt,
     )
@@ -68,7 +70,24 @@ async def create_WatchList(watchList: WatchList):
 @app.get("/watchList/{watchListId}", tags=["WatchLists"], response_model=WatchList)
 async def get_WatchList(watchListId: PydanticObjectId):
     # Get a watchList from the database - this is a read-only operation so no kafka
-    return await WatchList.find_one({"id": watchListId})
+    watchList = await WatchList.get(watchListId)
+    if watchList is None:
+        raise HTTPException(status_code=404, detail="WatchList not found")
+    return watchList
+
+
+# UNTESTED
+@app.get("/watchList/fromProfile/{profileId}", tags=["WatchLists"])
+async def get_WatchList_fromProfile(profileId: PydanticObjectId):
+    profile = await Profile.get(profileId)
+    print(profile)
+    if profile is None:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    print(profile.watchLists)
+    if profile.watchLists == []:
+        raise HTTPException(status_code=404, detail="Profile has no watchLists")
+    async for watchList in WatchList.find({"_id": {"$in": profile.watchLists}}):
+        print("WatchList: " + watchList)
 
 
 # Update
@@ -85,6 +104,23 @@ async def edit_WatchList(watchListId: PydanticObjectId, watchList: WatchList):
     return (
         watchList.id
     )  # Replace with HATEOAS compliant link to watchList page (/watchList/{watchListId})
+
+
+# UNTESTED
+@app.put("/watchList/{watchListId}/addMediaItem", tags=["WatchLists"])
+async def add_MediaItem_to_WatchList(
+    watchListId: PydanticObjectId, mediaItem: MediaItem
+):
+    # Produce a new mediaItem to kafka for the database to add to the watchList
+    message = {"watchListId": watchListId, "mediaItem": mediaItem}
+    message = json.dumps(message).encode("utf-8")
+    app.Producer.produce(
+        "watchlists",
+        message,
+        "watchlist-add-media-item",
+        callback=receipt,
+    )
+    return watchListId
 
 
 # Delete

@@ -70,19 +70,19 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     networks:
       - homepage
-  # watchlist-controller:
-  #   container_name: watchlist-controller
-  #   build: ./WatchList-Controller
-  #   ports:
-  #     - "8020s:8000"
-  #   environment:
-  #     - MONGO_URI=mongodb://homepage-mongo:27017
-  #   volumes:
-  #     - ./WatchList-Controller:/app
-  #   networks:
-  #     - homepage
-  #   depends_on:
-  #     - broker
+  watchlist-controller:
+    container_name: watchlist-controller
+    build: ./WatchList-Controller
+    ports:
+      - "8020:8000"
+    environment:
+      - MONGO_URI=mongodb://homepage-mongo:27017
+    volumes:
+      - ./WatchList-Controller:/app
+    networks:
+      - homepage
+    depends_on:
+      - broker
   profiles-controller:
     container_name: Profiles-controller
     build: ./Profiles-Controller

@@ -7,7 +7,7 @@ from models.watchList import WatchList
 class Profile_in(BaseModel):
     name: str
     index: Optional[int]
-    watchLists: list[WatchList] = []
+    watchLists: list[PydanticObjectId] = []
 
     icon: Optional[str]
     theme: Optional[str]

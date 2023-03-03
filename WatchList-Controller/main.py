@@ -32,9 +32,8 @@ async def consumeLoop(consumer, topics):
     print("Starting consumer loop")
     running = True
     try:
-
         print("Subscribing to topics: {}".format(topics))
-        consumer.subscribe(["profiles"])
+        consumer.subscribe(["watchlists"])
 
         while running:
             msg = consumer.poll(1.0)
@@ -60,27 +59,27 @@ async def consumeLoop(consumer, topics):
 async def handleMessage(message: bytes):
     key = message.key().decode("utf-8")
     value = message.value().decode("utf-8")
-    if key == "profile-create":
-        # Create a new profile
+    # ADD STATEMENT FOR watchlist-add-media-item that adds a media item to a watchlist
+    if key == "watchlist-create":
+        # Create a new watchList
+        # Incoming JSON is no longer what these 3 lines of code expect, UPDATE
         jsonValue = json.loads(value)
-        profile = Profile(**jsonValue)
-        await Profile.save(profile)
-        print("Created profile")
-        pass
-    elif key == "profile-update":
-        # Update an existing profile
+        watchlist = WatchList(**jsonValue)
+        await WatchList.save(watchlist)
+        # Add watchlistID to profile
+        print("Created watchlist")
+    elif key == "watchlist-update":
+        # Update an existing watchList
         jsonValue = json.loads(value)
-        profile = Profile.get(PydanticObjectId(jsonValue["id"]))
-        profile = Profile(**jsonValue)
-        await Profile.save(profile)
-        print("Updated profile")
-        pass
-    elif key == "profile-delete":
-        # Delete an existing profile
-        profile = await Profile.get(PydanticObjectId(value))
-        await profile.delete()
-        print("Deleted profile")
-        pass
+        watchlist = WatchList.get(PydanticObjectId(jsonValue["id"]))
+        watchlist = WatchList(**jsonValue)
+        await WatchList.save(watchlist)
+        print("Updated watchlist")
+    elif key == "watchlist-delete":
+        # Delete an existing watchList
+        watchlist = await WatchList.get(PydanticObjectId(value))
+        await watchlist.delete()
+        print("Deleted watchlist")
     else:
         print("Unknown message key: {}".format(key))
 
