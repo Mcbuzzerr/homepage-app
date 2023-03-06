@@ -35,7 +35,7 @@ class MediaItem(BaseModel):
 
 
 class WatchList(Document):
-    id: PydanticObjectId = PydanticObjectId()
+    id: Optional[PydanticObjectId]
     ownerId: Optional[PydanticObjectId]
     title: str
     index: Optional[int]

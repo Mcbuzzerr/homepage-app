@@ -49,10 +49,10 @@ async def read_root():
 
 # CRUD operations for watchLists
 # Create
-@app.post("/watchlist/create/{profileId}", status_code=201, tags=["WatchLists"])
+@app.post("/watchList/create/{profileId}", status_code=201, tags=["WatchLists"])
 async def create_WatchList(profileId: PydanticObjectId, watchList: WatchList):
     # Produce a new watchList to kafka for the database to create
-    message = {"profileId": profileId, "watchList": watchList}
+    message = {"profileId": profileId.__str__(), "watchList": watchList.toJSON()}
     message = json.dumps(message).encode("utf-8")
     print(message)
     app.Producer.produce(
@@ -62,11 +62,20 @@ async def create_WatchList(profileId: PydanticObjectId, watchList: WatchList):
         callback=receipt,
     )
     return (
-        watchList.id
+        watchList.id.__str__()
     )  # Replace with HATEOAS compliant link to watchList page (/watchList/{watchListId})
 
 
 # Read
+@app.get("/watchList/all", tags=["WatchLists"])
+async def get_all_WatchLists():
+    # Get all watchLists from the database - this is a read-only operation so no kafka
+    watchLists = []
+    async for watchList in WatchList.find():
+        watchLists.append(watchList)
+    return watchLists
+
+
 @app.get("/watchList/{watchListId}", tags=["WatchLists"], response_model=WatchList)
 async def get_WatchList(watchListId: PydanticObjectId):
     # Get a watchList from the database - this is a read-only operation so no kafka
@@ -86,8 +95,10 @@ async def get_WatchList_fromProfile(profileId: PydanticObjectId):
     print(profile.watchLists)
     if profile.watchLists == []:
         raise HTTPException(status_code=404, detail="Profile has no watchLists")
+    watchLists = []
     async for watchList in WatchList.find({"_id": {"$in": profile.watchLists}}):
-        print("WatchList: " + watchList)
+        watchLists.append(watchList)
+    return watchLists
 
 
 # Update

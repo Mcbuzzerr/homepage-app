@@ -19,7 +19,7 @@ services:
     container_name: watchlist-api
     build: ./WatchList-API
     ports:
-      - "8001:8000"
+      - "8002:8000"
     environment:
       - MONGO_URI=mongodb://homepage-mongo:27017
     volumes:
@@ -32,11 +32,21 @@ services:
     container_name: profiles-api
     build: ./Profiles-API
     ports:
-      - "8002:8000"
+      - "8001:8000"
     environment:
       - MONGO_URI=mongodb://homepage-mongo:27017
     volumes:
       - ./Profiles-API:/app
+    networks:
+      - homepage
+    depends_on:
+      - broker
+  kafka-exporter:
+    image: danielqsj/kafka-exporter
+    container_name: homepage-kafka-exporter
+    command: --kafka.server=broker:29092
+    ports:
+      - "9308:9308"
     networks:
       - homepage
     depends_on:
@@ -73,8 +83,6 @@ services:
   watchlist-controller:
     container_name: watchlist-controller
     build: ./WatchList-Controller
-    ports:
-      - "8020:8000"
     environment:
       - MONGO_URI=mongodb://homepage-mongo:27017
     volumes:
@@ -86,8 +94,6 @@ services:
   profiles-controller:
     container_name: Profiles-controller
     build: ./Profiles-Controller
-    ports:
-      - "8010:8000"
     environment:
       - MONGO_URI=mongodb://homepage-mongo:27017
     volumes:
@@ -105,6 +111,20 @@ services:
       - mongodb_data:/data/db
     networks:
       - homepage
+  prometheus: # Checl if accurate, this is generated code
+    container_name: homepage-prometheus
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - homepage
+    depends_on:
+      - watchlist-api
+      - profiles-api
+      - watchlist-controller
+      - profiles-controller
 
 volumes:
   mongodb_data:
