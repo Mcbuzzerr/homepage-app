@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from beanie import init_beanie, PydanticObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
 from decouple import config
@@ -10,7 +11,13 @@ import confluent_kafka
 from confluent_kafka import KafkaException, Producer
 
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # To enable prometheus metrics, uncomment the following lines and install the dependencies
 # from starlette_exporter import PrometheusMiddleware, handle_metrics
@@ -74,6 +81,15 @@ async def get_Profile(profileId: PydanticObjectId):
     if profile is None:
         raise HTTPException(status_code=404, detail="Profile not found")
     return profile
+
+
+@app.get("/profiles", tags=["Profiles"])
+async def get_Profiles():
+    # Get all profiles from the database - this is a read-only operation so no kafka
+    profiles = []
+    async for profile in Profile.find_all():
+        profiles.append(profile)
+    return profiles
 
 
 # Update

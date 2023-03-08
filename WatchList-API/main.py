@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Body
+from fastapi.middleware.cors import CORSMiddleware
 from beanie import init_beanie, PydanticObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
 from decouple import config
@@ -11,7 +12,13 @@ import confluent_kafka
 from confluent_kafka import KafkaException, Producer
 
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # To enable prometheus metrics, uncomment the following lines and install the dependencies
 # from starlette_exporter import PrometheusMiddleware, handle_metrics

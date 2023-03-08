@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { useState } from "react";
 import Bubble from "../components/bubble.jsx"
-import Window from "../components/window.jsx"
+import Window from "../src/components/window.jsx"
 // import { redirect } from 'react-router-dom';
 // import { useOutletContext } from 'react-router-dom';
 // import { useLoaderData } from 'react-router-dom';
