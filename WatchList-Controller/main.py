@@ -19,13 +19,15 @@ profileConsumer = Consumer(
 
 
 async def start_server():
+    print("Connecting to movie database")
+    global movieDBConfig
     print("Starting beanie")
     databaseClient = AsyncIOMotorClient(config("MONGO_URI"))
     await init_beanie(
         database=databaseClient.HomePage,
         document_models=[Profile, WatchList],
     )
-    await consumeLoop(profileConsumer, ["profiles"])
+    await consumeLoop(profileConsumer, ["watchlists"])
 
 
 async def consumeLoop(consumer, topics):
@@ -33,7 +35,7 @@ async def consumeLoop(consumer, topics):
     running = True
     try:
         print("Subscribing to topics: {}".format(topics))
-        consumer.subscribe(["watchlists"])
+        consumer.subscribe(topics)
 
         while running:
             msg = consumer.poll(1.0)
@@ -50,6 +52,8 @@ async def consumeLoop(consumer, topics):
                 elif msg.error():
                     raise KafkaException(msg.error())
             else:
+                print("Processing message:")
+                print("Key: {}".format(msg.key().decode("utf-8")))
                 print("Consumed message: {}".format(msg.value().decode("utf-8")))
                 await handleMessage(msg)
     finally:
@@ -61,29 +65,32 @@ async def handleMessage(message: bytes):
     value = message.value().decode("utf-8")
     match key:
         case "watchlist-create":
-            await watchlist_create(key, value)
+            await watchlist_create(value)
         case "watchlist-update":
-            await watchlist_update(key, value)
+            await watchlist_update(value)
         case "watchlist-delete":
             await watchlist_delete(value)
         case "watchlist-add-media-item":
-            await watchlist_add_media_item(key, value)
+            await watchlist_add_media_item(value)
         case _:  # default
             print("Unknown message key: {}".format(key))
 
 
-async def watchlist_add_media_item(key, value):
+async def watchlist_add_media_item(value):
     print("Adding media item to watchlist")
     # Add a media item to a watchlist # UNTESTED
     jsonValue = json.loads(value)
-    watchlist = await WatchList.get(PydanticObjectId(jsonValue["watchlistId"]))
-    mediaItem = MediaItem(**jsonValue["mediaItem"])
+    print(jsonValue)
+    print(jsonValue["watchListId"])
+    print(json.loads(jsonValue["mediaItem"]))
+    watchlist = await WatchList.get(PydanticObjectId(jsonValue["watchListId"]))
+    mediaItem = MediaItem(**json.loads(jsonValue["mediaItem"]))
     watchlist.mediaItems.append(mediaItem)
     await WatchList.save(watchlist)
     print("Added media item to watchlist")
 
 
-async def watchlist_create(key, value):
+async def watchlist_create(value):
     print("Creating watchlist")
     # Create a new watchList
     jsonValue = json.loads(value)
@@ -99,11 +106,22 @@ async def watchlist_create(key, value):
     print("Created watchlist")
 
 
-async def watchlist_update(key, value):
+async def watchlist_update(value):
     print("Updating watchlist")
     # Update an existing watchList
     jsonValue = json.loads(value)
-    watchlist = WatchList.get(PydanticObjectId(jsonValue["id"]))
+    jsonValue["id"] = PydanticObjectId(jsonValue["id"])
+    watchlist = await WatchList.get(PydanticObjectId(jsonValue["id"]))
+
+    if jsonValue["ownerId"] == "None":
+        jsonValue["ownerId"] = watchlist.ownerId
+    if jsonValue["title"] == "None":
+        jsonValue["title"] = watchlist.title
+    if jsonValue["index"] == "None":
+        jsonValue["index"] = watchlist.index
+    if jsonValue["mediaItems"] == "None":
+        jsonValue["mediaItems"] = watchlist.mediaItems
+
     watchlist = WatchList(**jsonValue)
     await WatchList.save(watchlist)
     print("Updated watchlist")
@@ -113,6 +131,9 @@ async def watchlist_delete(value):
     print("Deleting watchlist")
     # Delete an existing watchList
     watchlist = await WatchList.get(PydanticObjectId(value))
+    account = await Profile.get(watchlist.ownerId)
+    account.watchLists.remove(watchlist.id)
+    await Profile.save(account)
     await watchlist.delete()
     print("Deleted watchlist")
 

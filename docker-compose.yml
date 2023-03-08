@@ -85,6 +85,7 @@ services:
     build: ./WatchList-Controller
     environment:
       - MONGO_URI=mongodb://homepage-mongo:27017
+      - MOVIE_DB_API_KEY=959d7da058d687321c67d47b52e38e7c
     volumes:
       - ./WatchList-Controller:/app
     networks:

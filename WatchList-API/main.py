@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Body
 from beanie import init_beanie, PydanticObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
 from decouple import config
@@ -85,7 +85,6 @@ async def get_WatchList(watchListId: PydanticObjectId):
     return watchList
 
 
-# UNTESTED
 @app.get("/watchList/fromProfile/{profileId}", tags=["WatchLists"])
 async def get_WatchList_fromProfile(profileId: PydanticObjectId):
     profile = await Profile.get(profileId)
@@ -105,11 +104,12 @@ async def get_WatchList_fromProfile(profileId: PydanticObjectId):
 @app.put("/watchList/edit", tags=["WatchLists"])
 async def edit_WatchList(watchListId: PydanticObjectId, watchList: WatchList):
     # Produce an edited watchList to kafka for the database to update
+    watchList.id = watchListId
     encodedWatchList = watchList.toJSON().encode("utf-8")
     app.Producer.produce(
-        "watchLists",
+        "watchlists",
         encodedWatchList,
-        "watchList-update",
+        "watchlist-update",
         callback=receipt,
     )
     return (
@@ -117,13 +117,15 @@ async def edit_WatchList(watchListId: PydanticObjectId, watchList: WatchList):
     )  # Replace with HATEOAS compliant link to watchList page (/watchList/{watchListId})
 
 
-# UNTESTED
 @app.put("/watchList/{watchListId}/addMediaItem", tags=["WatchLists"])
 async def add_MediaItem_to_WatchList(
     watchListId: PydanticObjectId, mediaItem: MediaItem
 ):
     # Produce a new mediaItem to kafka for the database to add to the watchList
-    message = {"watchListId": watchListId, "mediaItem": mediaItem}
+    message = {
+        "watchListId": watchListId.__str__(),
+        "mediaItem": mediaItem.toJSON(),
+    }
     message = json.dumps(message).encode("utf-8")
     app.Producer.produce(
         "watchlists",
@@ -139,8 +141,8 @@ async def add_MediaItem_to_WatchList(
 async def delete_WatchList(watchListId: PydanticObjectId):
     # Produce a delete event to kafka for the database to delete a watchList
     app.Producer.produce(
-        "watchLists",
+        "watchlists",
         watchListId.__str__().encode("utf-8"),
-        "watchList-delete",
+        "watchlist-delete",
         callback=receipt,
     )

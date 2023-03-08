@@ -10,9 +10,9 @@ class MediaType(IntEnum):
 
 
 class MediaItem(BaseModel):
-    index: str
+    index: Optional[int]
     title: str
-    type: MediaType  # change to enum, see https://pydantic-docs.helpmanual.io/usage/types/#enums
+    type: MediaType
     services: list[str] = []
     year: Optional[int]
     rating: Optional[float]
