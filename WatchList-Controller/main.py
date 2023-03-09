@@ -3,10 +3,11 @@ from beanie import init_beanie, PydanticObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
 from decouple import config
 from confluent_kafka import Consumer, KafkaException, KafkaError
-
+from prometheus_client import start_http_server
 from models.profile import Profile, Profile_in
 from models.watchList import WatchList, MediaItem, MediaType
 import asyncio
+
 
 print("Starting profiles controller")
 profileConsumer = Consumer(
@@ -19,14 +20,16 @@ profileConsumer = Consumer(
 
 
 async def start_server():
-    print("Connecting to movie database")
-    global movieDBConfig
     print("Starting beanie")
     databaseClient = AsyncIOMotorClient(config("MONGO_URI"))
     await init_beanie(
         database=databaseClient.HomePage,
         document_models=[Profile, WatchList],
     )
+    print("Started beanie")
+    print("Starting metrics server")
+    start_http_server(8000)
+    print("Started metrics server")
     await consumeLoop(profileConsumer, ["watchlists"])
 
 
@@ -39,7 +42,7 @@ async def consumeLoop(consumer, topics):
 
         while running:
             msg = consumer.poll(1.0)
-            # print("Polling")
+            print("Polling")
             if msg is None:
                 continue
             if msg.error():

@@ -20,10 +20,18 @@ app.add_middleware(
 )
 
 # To enable prometheus metrics, uncomment the following lines and install the dependencies
-# from starlette_exporter import PrometheusMiddleware, handle_metrics
+from starlette_exporter import PrometheusMiddleware, handle_metrics
 
-# app.add_middleware(PrometheusMiddleware)
-# app.add_route("/metrics", handle_metrics)
+app.add_middleware(PrometheusMiddleware)
+app.add_route("/metrics", handle_metrics)
+
+
+def hyperLink(
+    id: PydanticObjectId, resource: str, port: int = 80, domain: str = "localhost"
+):
+    return f"http://{domain}:{port}/{resource}/{id.__str__()}"
+
+
 def receipt(self, err, msg):
     if err is not None:
         print("Failed to deliver message: {0}: {1}".format(msg.value(), err.str()))
@@ -74,22 +82,33 @@ async def register_Profile(profile: Profile_in):
 
 
 # Read
+@app.get("/profile/all", tags=["Profiles"])
+async def get_Profiles():
+    # Get all profiles from the database - this is a read-only operation so no kafka
+    profiles = []
+    async for profile in Profile.find_all():
+        new_watchLists = []
+        for watchList in profile.watchLists:
+            new_watchLists.append(hyperLink(watchList, "watchList"))
+        profile.watchLists = new_watchLists
+        profiles.append(profile)
+    return profiles
+
+
 @app.get("/profile/{profileId}", tags=["Profiles"], response_model=Profile)
 async def get_Profile(profileId: PydanticObjectId):
     # Get a profile from the database - this is a read-only operation so no kafka
     profile = await Profile.get(profileId)
     if profile is None:
         raise HTTPException(status_code=404, detail="Profile not found")
+    profile.id = hyperLink(profile.id, "profile")
+
+    new_watchLists = []
+    for watchList in profile.watchLists:
+        new_watchLists.append(hyperLink(watchList, "watchList"))
+    profile.watchLists = new_watchLists
+
     return profile
-
-
-@app.get("/profiles", tags=["Profiles"])
-async def get_Profiles():
-    # Get all profiles from the database - this is a read-only operation so no kafka
-    profiles = []
-    async for profile in Profile.find_all():
-        profiles.append(profile)
-    return profiles
 
 
 # Update

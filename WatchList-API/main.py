@@ -21,10 +21,18 @@ app.add_middleware(
 )
 
 # To enable prometheus metrics, uncomment the following lines and install the dependencies
-# from starlette_exporter import PrometheusMiddleware, handle_metrics
+from starlette_exporter import PrometheusMiddleware, handle_metrics
 
-# app.add_middleware(PrometheusMiddleware)
-# app.add_route("/metrics", handle_metrics)
+app.add_middleware(PrometheusMiddleware)
+app.add_route("/metrics", handle_metrics)
+
+
+def hyperLink(
+    id: PydanticObjectId, resource: str, port: int = 80, domain: str = "localhost"
+):
+    return f"http://{domain}:{port}/{resource}/{id.__str__()}"
+
+
 def receipt(self, err, msg):
     if err is not None:
         print("Failed to deliver message: {0}: {1}".format(msg.value(), err.str()))
@@ -80,15 +88,17 @@ async def get_all_WatchLists():
     watchLists = []
     async for watchList in WatchList.find():
         watchLists.append(watchList)
+        watchList.ownerId = hyperLink(watchList.ownerId, "profile")
     return watchLists
 
 
-@app.get("/watchList/{watchListId}", tags=["WatchLists"], response_model=WatchList)
+@app.get("/watchList/{watchListId}", tags=["WatchLists"])
 async def get_WatchList(watchListId: PydanticObjectId):
     # Get a watchList from the database - this is a read-only operation so no kafka
     watchList = await WatchList.get(watchListId)
     if watchList is None:
         raise HTTPException(status_code=404, detail="WatchList not found")
+    watchList.ownerId = hyperLink(watchList.ownerId, "profile")
     return watchList
 
 

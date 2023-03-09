@@ -8,18 +8,30 @@ services:
     image: nginx:latest
     ports:
       - "80:80"
+      - "8080:8080"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     networks:
       - homepage
     depends_on:
-      - watchlist-api
-      - profiles-api
-  watchlist-api:
-    container_name: watchlist-api
-    build: ./WatchList-API
+      - watchlist-api-1
+      - watchlist-api-2
+      - profiles-api-1
+      - profiles-api-2
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: homepage-nginx-exporter
     ports:
-      - "8002:8000"
+      - "9113:9113"
+    command:
+      - -nginx.scrape-uri=http://homepage-nginx:8080/stub_status
+    networks:
+      - homepage
+    depends_on:
+      - nginx
+  watchlist-api-1:
+    container_name: watchlist-api-1
+    build: ./WatchList-API
     environment:
       - MONGO_URI=mongodb://homepage-mongo:27017
     volumes:
@@ -28,11 +40,31 @@ services:
       - homepage
     depends_on:
       - broker
-  profiles-api:
-    container_name: profiles-api
+  watchlist-api-2:
+    container_name: watchlist-api-2
+    build: ./WatchList-API
+    environment:
+      - MONGO_URI=mongodb://homepage-mongo:27017
+    volumes:
+      - ./WatchList-API:/app
+    networks:
+      - homepage
+    depends_on:
+      - broker
+  profiles-api-1:
+    container_name: profiles-api-1
     build: ./Profiles-API
-    ports:
-      - "8001:8000"
+    environment:
+      - MONGO_URI=mongodb://homepage-mongo:27017
+    volumes:
+      - ./Profiles-API:/app
+    networks:
+      - homepage
+    depends_on:
+      - broker
+  profiles-api-2:
+    container_name: profiles-api-2
+    build: ./Profiles-API
     environment:
       - MONGO_URI=mongodb://homepage-mongo:27017
     volumes:
@@ -50,7 +82,7 @@ services:
     networks:
       - homepage
     depends_on:
-      - broker
+      - profiles-api-1 # This is just to make sure the broker is up and running
   broker:
     container_name: homepage-broker
     image: confluentinc/cp-kafka:latest
@@ -93,7 +125,7 @@ services:
     depends_on:
       - broker
   profiles-controller:
-    container_name: Profiles-controller
+    container_name: profiles-controller
     build: ./Profiles-Controller
     environment:
       - MONGO_URI=mongodb://homepage-mongo:27017
@@ -112,7 +144,18 @@ services:
       - mongodb_data:/data/db
     networks:
       - homepage
-  prometheus: # Checl if accurate, this is generated code
+  mongo-exporter:
+    container_name: homepage-mongo-exporter
+    image: bitnami/mongodb-exporter:latest
+    ports:
+      - "9216:9216"
+    environment:
+      - MONGODB_URI=mongodb://homepage-mongo:27017
+    networks:
+      - homepage
+    depends_on:
+      - mongo
+  prometheus: 
     container_name: homepage-prometheus
     image: prom/prometheus
     ports:
@@ -122,10 +165,15 @@ services:
     networks:
       - homepage
     depends_on:
-      - watchlist-api
-      - profiles-api
+      - watchlist-api-1
+      - watchlist-api-2
+      - profiles-api-1
+      - profiles-api-2
       - watchlist-controller
       - profiles-controller
+      - mongo-exporter
+      - nginx-exporter
+      - kafka-exporter
 
 volumes:
   mongodb_data:
