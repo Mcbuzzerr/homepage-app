@@ -2,15 +2,22 @@
     --header-padding: 1vh;
     --header-height: 11vh;
     --header-width: calc(100vw - (var(--header-padding) * 2));
-    --main-height: calc(100vh - (var(--header-height) * 2));
+    --main-height: calc(100vh - ((var(--header-height) * 2) + (var(--header-padding) * 4)));
 
-    --background-color-1: #58e;
-    --background-color-2: #69f;
-    --lining-color: #060641;
+    --background-color-1: #2e4cc7;
+    --background-color-2: #3a66f8;
+    --primary-color: #3055f9;
+    --lining-color: #05057a;
     --line-thickness: 3.5px;
 
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     color: var(--lining-color);
+
+    --column-count: 6;
+    --row-count: 4;
+    --arrow-size: 7.5vw;
+    --grid-spacing: 10px;
+    --id-visibility: none;
 }
 
 header, footer {
@@ -31,7 +38,7 @@ header, footer {
     height: 50px;
     /* outline: solid var(--line-thickness) var(--lining-color); */
     border-radius: 15px;
-    background-color: var(--background-color-1);
+    background-color: var(--primary-color);
     position: relative;
 
 }
@@ -59,6 +66,9 @@ main {
     height: var(--main-height);
     width: 100%;
     background-color: var(--background-color-1);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 .bubble {
@@ -104,9 +114,9 @@ main {
     width: calc(100% - (var(--padding) * 2));
     height: 2rem;
     font-size: 1.2rem;
-    background-color: var(--background-color-1);
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
+    background-color: var(--primary-color);
+    border-top-left-radius: 11px;
+    border-top-right-radius: 11px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -123,12 +133,12 @@ main {
     justify-content: center;
 }
 
-.profile-list {
+.resource-list {
     width: 100%;
     height: 80%;
 }
 
-.profile-list-item {
+.resource-list-item {
     height: 4rem;
     display: flex;
     justify-content: space-around;
@@ -140,11 +150,11 @@ main {
     width: calc(100% - 20px);
 }
 
-.profile-list-item > * {
+.resource-list-item > * {
     display: inline-block;
 }
 
-.profile-icon {
+.resource-icon {
     width: 3rem;
     height: 3rem;
     border-radius: 50%;
@@ -152,7 +162,7 @@ main {
     margin: 0.5rem;
 }
 
-.profile-name {
+.resource-name {
     font-size: 1.5rem;
     height: 50px;
     display: flex;
@@ -162,7 +172,7 @@ main {
     border-bottom: solid var(--line-thickness) var(--lining-color);
 }
 
-.profile-list-item .button {
+.resource-list-item .button {
     width: 50px;
     height: 50px;
     display: flex;
@@ -170,17 +180,18 @@ main {
     justify-content: center;
     border: var(--lining-color) solid var(--line-thickness);
     border-radius: 15px;
+    user-select: none;
 }
 
-.profile-list-item .button:hover {
+.resource-list-item .button:hover {
     filter: brightness(0.5);
 }
 
-.profile-select {
+.resource-select {
     background-color: green;
 }
 
-.profile-edit {
+.resource-edit {
     background-color: blue;
     color: white;
 }
@@ -202,4 +213,173 @@ main {
 
 .window-header-close-button:hover {
     background-color: #c22;
+}
+
+.centerInsides {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.button {
+    width: 100px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--primary-color);
+    color: aliceblue;
+    border-radius: 15px;
+    user-select: none;
+}
+
+.gridPage {
+    display: grid;
+    width: 85vw;
+    height: var(--main-height);
+    grid-template-columns: repeat(var(--column-count), calc(100% / var(--column-count)));
+    grid-template-rows: repeat(var(--row-count), calc(100% / var(--row-count)));
+    /* row-gap: var(--grid-spacing);
+    column-gap: var(--grid-spacing); */
+    position: absolute;
+    right: -110vw;
+}
+
+@keyframes page-out-right {
+    0% {
+        position: absolute;
+        right: 7.5vw;
+    }
+    100% {
+        position: absolute;
+        right: -110vw;
+    }
+}
+
+@keyframes page-out-left {
+    0% {
+        position: absolute;
+        left: 7.5vw;
+    }
+    100% {
+        left: -110vw;
+        position: absolute;
+    }
+    
+}
+
+@keyframes page-in-right {
+    0% {
+        position: absolute;
+        right: -110vw;
+    }
+    100% {
+        right: 7.5vw;
+        position: absolute;
+    }
+}
+
+@keyframes page-in-left {
+    0% {
+        position: absolute;
+        left: -110vw;
+    }
+    100% {
+        left: 7.5vw;
+        position: absolute;
+    }
+}
+
+#gp-1 {
+    /* Default Grid Page, Likely empty */
+    position: absolute;
+    left: 7.5vw;
+}
+
+.gridCell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* aspect-ratio: 1; */
+    padding: 10px; 
+}
+
+.gridItem {
+    height: 100%;
+    aspect-ratio: 1;
+    background-color: var(--primary-color);
+    /* border: solid 5px #3055f9; */
+    border-radius: 10px;
+    color: white;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    position: relative;
+    padding: 5px;
+}
+
+.gridImage {
+    width: 80%;
+    height: 80%;
+    aspect-ratio: 1;
+    border-radius: 15px;
+    background-color: #2a3cc2;
+    background-size: cover;
+}
+
+.gridText {
+    color: white;
+}
+
+.pageButton {
+    width: var(--arrow-size);
+}
+
+.arrow {
+    width: 2rem;
+    height: 2rem;
+    transform: rotate(45deg);
+    position: relative;
+    border:  solid 10px var(--lining-color);
+    z-index: 1;
+}
+
+.right {
+    border-left: none;
+    border-bottom: none;
+    left: -25px;
+}
+
+.left {
+    border-right: none;
+    border-top: none;
+    right: -25px;
+}
+
+.plus {
+    width: 5rem;
+    height: 5rem;
+    position: relative;
+    display: none;
+}
+
+.iconLine {
+    height: calc(2rem + (2 * 10px));
+    border-right: solid 10px var(--lining-color);
+    position: absolute;
+}
+
+.plus :nth-child(1) {
+    transform: rotate(90deg);
+}
+
+.slotID {
+    position: absolute;
+    color: rgb(26, 12, 12);
+    font-size: 1.5rem;
+    top: 0%;
+    left: 0%;
+    display: var(--id-visibility);
 }

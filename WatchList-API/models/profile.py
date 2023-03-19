@@ -13,10 +13,17 @@ class Profile_in(BaseModel):
     theme: Optional[str]
 
     def toJSON(self):
+        watchListsJSON = ""
+        for watchList in self.watchLists:
+            watchListsJSON += watchList.__str__() + ", "
+        watchListsJSON = watchListsJSON[:-2]
+
         string = (
             "{"
             + f'"name": "{self.name}", "index": {self.index}, "watchLists": ['
-            + ", ".join(self.watchLists)
+            + '"'
+            + watchListsJSON
+            + '"'
             + "], "
             + f'"icon": "{self.icon}", "theme": "{self.theme}"'
             + "}"
@@ -28,10 +35,17 @@ class Profile(Document, Profile_in):
     id: PydanticObjectId = PydanticObjectId()
 
     def toJSON(self):
+        watchListsJSON = ""
+        for watchList in self.watchLists:
+            watchListsJSON += watchList.__str__() + ", "
+        watchListsJSON = watchListsJSON[:-2]
+
         string = (
             "{"
             + f'"id": "{self.id}", "name": "{self.name}", "index": {self.index}, "watchLists": ['
-            + ", ".join(self.watchLists)
+            + '"'
+            + watchListsJSON
+            + '"'
             + "], "
             + f'"icon": "{self.icon}", "theme": "{self.theme}"'
             + "}"

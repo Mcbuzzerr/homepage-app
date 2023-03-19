@@ -67,6 +67,10 @@ async def handleMessage(message: bytes):
     if key == "profile-create":
         # Create a new profile
         jsonValue = json.loads(value)
+        jsonValue["id"] = PydanticObjectId(jsonValue["id"])
+        if jsonValue["watchLists"] == [""]:
+            jsonValue["watchLists"] = []
+        print(jsonValue)
         profile = Profile(**jsonValue)
         await Profile.save(profile)
         print("Created profile")
@@ -74,7 +78,9 @@ async def handleMessage(message: bytes):
     elif key == "profile-update":
         # Update an existing profile
         jsonValue = json.loads(value)
-        profile = Profile.get(PydanticObjectId(jsonValue["id"]))
+        profile = await Profile.get(PydanticObjectId(jsonValue["id"]))
+        if jsonValue["watchLists"] == [""]:
+            jsonValue["watchLists"] = []
         profile = Profile(**jsonValue)
         await Profile.save(profile)
         print("Updated profile")

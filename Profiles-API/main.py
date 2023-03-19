@@ -76,9 +76,7 @@ async def register_Profile(profile: Profile_in):
         "profile-create",
         callback=receipt,
     )
-    return (
-        newProfile.id
-    )  # Replace with HATEOAS compliant link to profile page (/profile/{profileId})
+    return hyperLink(newProfile.id, "profile")
 
 
 # Read
@@ -95,7 +93,7 @@ async def get_Profiles():
     return profiles
 
 
-@app.get("/profile/{profileId}", tags=["Profiles"], response_model=Profile)
+@app.get("/profile/{profileId}", tags=["Profiles"])
 async def get_Profile(profileId: PydanticObjectId):
     # Get a profile from the database - this is a read-only operation so no kafka
     profile = await Profile.get(profileId)
@@ -123,9 +121,7 @@ async def edit_Profile(profileId: PydanticObjectId, profile: Profile_in):
         "profile-update",
         callback=receipt,
     )
-    return (
-        newProfile.id
-    )  # Replace with HATEOAS compliant link to profile page (/profile/{profileId})
+    return hyperLink(newProfile.id, "profile")
 
 
 # Delete

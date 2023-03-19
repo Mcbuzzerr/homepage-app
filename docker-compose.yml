@@ -8,7 +8,7 @@ services:
     image: nginx:latest
     ports:
       - "80:80"
-      - "8080:8080"
+      # - "8080:8080"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     networks:
@@ -21,8 +21,8 @@ services:
   nginx-exporter:
     image: nginx/nginx-prometheus-exporter:latest
     container_name: homepage-nginx-exporter
-    ports:
-      - "9113:9113"
+    # ports:
+    #   - "9113:9113"
     command:
       - -nginx.scrape-uri=http://homepage-nginx:8080/stub_status
     networks:
@@ -36,6 +36,8 @@ services:
       - MONGO_URI=mongodb://homepage-mongo:27017
     volumes:
       - ./WatchList-API:/app
+    ports:
+      - "8002:8000"
     networks:
       - homepage
     depends_on:
@@ -58,6 +60,8 @@ services:
       - MONGO_URI=mongodb://homepage-mongo:27017
     volumes:
       - ./Profiles-API:/app
+    ports:
+      - "8001:8000"
     networks:
       - homepage
     depends_on:
@@ -77,8 +81,8 @@ services:
     image: danielqsj/kafka-exporter
     container_name: homepage-kafka-exporter
     command: --kafka.server=broker:29092
-    ports:
-      - "9308:9308"
+    # ports:
+    #   - "9308:9308"
     networks:
       - homepage
     depends_on:
@@ -88,8 +92,8 @@ services:
     image: confluentinc/cp-kafka:latest
     depends_on:
       - zookeeper
-    ports:
-      - "29092:29092" # Main port for Kafka
+    # ports:
+    #   - "29092:29092" # Main port for Kafka
       # - "9092:9092"
       # - "9101:9101"
     environment:
@@ -147,8 +151,8 @@ services:
   mongo-exporter:
     container_name: homepage-mongo-exporter
     image: bitnami/mongodb-exporter:latest
-    ports:
-      - "9216:9216"
+    # ports:
+    #   - "9216:9216"
     environment:
       - MONGODB_URI=mongodb://homepage-mongo:27017
     networks:

@@ -28,10 +28,27 @@
         </div>
     </header>
     <main>
+        <div class="pageButton centerInsides left">
+            <div class="arrow left" onclick="pageSwap(-1)"></div>
+        </div>
+        <div id="gridContainer">
+            <div class="gridPage" id="gp-1">
+            </div>
+            <div class="gridPage" id="gp-2">
+            </div>
+        </div>
 
+        <div class="pageButton centerInsides right">
+            <div class="arrow right" onclick="pageSwap(1)"></div>
+            <div class="plus centerInsides" onclick="newPage()">
+                <div class="iconLine"></div>
+                <div class="iconLine"></div>
+            </div>
+        </div>
     </main>
     <footer>
-
+        <div class="button" onclick="toggleSize()">Toggle Size</div>
+        <div class="button" onclick="toggleIDs()">Toggle IDs</div>
     </footer>
 </body>
 
