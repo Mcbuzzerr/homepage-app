@@ -7,6 +7,7 @@ let userGrid = [];
 for (let i = 0; i < itemCount * 2; i++) {
     userGrid[i] = null;
 }
+// Randomly add cats to grid
 for (let i = 0; i < itemCount / 2; i++) {
     let index = Math.floor(Math.random() * itemCount * 2);
     userGrid[index] = i;
@@ -83,8 +84,13 @@ const getWindow = async (windowType) => {
             //         html += `</div>`
             //     })
             return window = createWindow(html, "WatchLists", 300, 300);
+        case "add-service":
+            return window = createWindow("Add Service Window", "Add Service", 300, 300);
+        case "add-folder":
+            return window = createWindow("Add Folder Window", "Add Folder", 300, 300);
+        case "dev":
+            return window = createWindow("Dev Window", "Dev", 300, 300);
         default:
-            alert("Error: Window type not found");
             return window = createWindow("Window Not Found", "Error", 300, 300);
         }
 }
@@ -175,9 +181,11 @@ const generateGrid = (gridID, columnCount, rowCount, itemCount) => {
     for (let i = ((gridID - 1) * itemCount); i < ((gridID - 1) * itemCount) + itemCount; i++) {
         let gridCell = document.createElement('div');
         gridCell.classList.add('gridCell');
+        gridCell.id = "gc-" + i;
 
         let gridCellContent = document.createElement('div');
         gridCellContent.classList.add('gridItem');
+        gridCellContent.id = "gi-" + i;
 
         let slotIDLabel = document.createElement('span');
         slotIDLabel.classList.add('slotID');
@@ -188,6 +196,7 @@ const generateGrid = (gridID, columnCount, rowCount, itemCount) => {
         let sampleImage = document.createElement('div');
         sampleImage.style.backgroundImage = "url(https://cataas.com/cat?width=100&height=100)";
         sampleImage.classList.add('gridImage');
+        sampleImage.id = "im-" + i;
 
         gridCellContent.append(sampleImage);
 
@@ -321,3 +330,85 @@ const setIconHidden = (buttonIndex, isHidden) => {
     }
 }
 
+let isExpanded = false;
+const slide = (event) => {
+    if (isExpanded) {
+        event.target.parentNode.style.animation = "slideOut 0.3s ease-in-out forwards";
+        isExpanded = false;
+    } else {
+        event.target.parentNode.style.animation = "slideIn 0.3s ease-in-out forwards";
+        isExpanded = true;
+        document.body.addEventListener('click', (event) => {
+            if (event.target.id != "menu-Bubble") {
+                document.getElementById("bc-1").style.animation = "slideOut 0.3s ease-in-out forwards";
+                isExpanded = false;
+            }
+        })
+    }
+}
+
+let draggedElement = null;
+document.addEventListener("dragstart", (event) => {
+    draggedElement = event.target;
+    event.dataTransfer.setData("text/plain", event.target.id);
+    console.log("dragstart")
+    console.log(event.target.id)
+});
+
+document.addEventListener("dragover", function(event) {
+    // Prevent default behavior to allow drop
+    event.preventDefault();
+
+    // Check if the target element has the 'drop-target' class
+    var validDropTarget = event.target.classList.contains("gridItem") || event.target.classList.contains("gridImage");
+
+    // If the target element is a valid drop target, change its border to indicate that it can accept the dragged element
+    if (validDropTarget) {
+        event.target.style.border = "2px dashed black";
+    }
+});
+
+document.addEventListener("dragleave", function(event) {
+    // If the target element is a valid drop target, reset its border
+    if (event.target.classList.contains("gridItem") || event.target.classList.contains("gridImage")) {
+        event.target.style.border = "";
+    }
+});
+
+
+document.addEventListener("drop", function(event) {
+    // Prevent default behavior to allow drop
+    event.preventDefault();
+    // Get the ID of the dragged element from the data transfer object
+    var data = event.dataTransfer.getData("text/plain");
+    var validDropTarget = event.target.classList.contains("gridItem") || event.target.classList.contains("gridImage");
+
+    // If the target element is a valid drop target, change its border to indicate that it can accept the dragged element
+    if (validDropTarget) {
+        
+        // Append a new element to the drop target
+        let dropTarget = event.target;
+        let dropSlot = dropTarget.id.substring(3, dropTarget.id.length)
+        let dropTargetIdentifier = dropTarget.id.substring(0, 2)
+        let gridCell;
+        if (dropTargetIdentifier == "gi") {
+            gridCell = dropTarget.parentNode;
+        } else if (dropTargetIdentifier == "im") {
+            gridCell = dropTarget.parentNode.parentNode;
+        }
+
+        let gridItem = gridCell.firstElementChild;
+        console.log(gridItem)
+
+        for (let i = 0; i < gridItem.children.length; i++) {
+            if (gridItem.children[i].classList.contains("gridText")) {
+                gridItem.children[i].innerHTML = data;
+            }
+        }
+        // Change the opacity of the dragged element back to 1
+        draggedElement.style.opacity = 1;
+        dropTarget.style.border = "";
+
+        openWindow(event, data);
+    }
+});

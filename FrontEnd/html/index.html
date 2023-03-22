@@ -13,7 +13,7 @@
 
 <body>
     <header>
-        <div id="watchLists-Bubble" class="bubble" onclick="openWindow(event, 'watchlists')">
+        <div id="watchLists-Bubble" class="bubble" onclick="toggleSize()"> <!--openWindow(event, 'watchlists')-->
 
         </div>
         <div class="searchBar">
@@ -23,7 +23,7 @@
                 <!-- icon that is magnifying glass -->
             </div>
         </div>
-        <div id="profiles-Bubble" class="bubble" onclick="openWindow(event, 'profiles')">
+        <div id="profiles-Bubble" class="bubble" onclick="toggleIDs()"> <!--openWindow(event, 'profiles')-->
 
         </div>
     </header>
@@ -47,8 +47,17 @@
         </div>
     </main>
     <footer>
-        <div class="button" onclick="toggleSize()">Toggle Size</div>
-        <div class="button" onclick="toggleIDs()">Toggle IDs</div>
+        <div class="bubbleContainer" id="bc-1">
+            <div id="add-service" class="bubble" onclick="openWindow(event, 'add-service')" draggable="true">
+                <!-- icon that is a pin -->
+            </div>
+            <div id="add-folder" class="bubble" onclick="openWindow(event, 'add-folder')" draggable="true">
+                <!-- icon that is a foder -->
+            </div>
+            <div id="menu-Bubble" class="bubble" onclick="slide(event)"> <!--openWindow(event, 'watchlists')-->
+
+            </div>
+        </div>
     </footer>
 </body>
 

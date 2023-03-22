@@ -50,7 +50,7 @@ header, footer {
     padding: none;
     background-color: #00000000;
     padding-left: 15px;
-    font-size: 1.5rem;
+    font-size: 1.rem;
     border-radius: 15px;
 }
 
@@ -82,6 +82,7 @@ main {
     background-position: center;
     display: inline-block;
     transition: 0.15s;
+    aspect-ratio: 1/1;
 }
 
 .bubble:hover {
@@ -90,6 +91,35 @@ main {
 
 .bubble:active {
     filter: brightness(1.5);
+}
+
+.bubbleContainer {
+    position: relative;
+    bottom: 0;
+    left: -215px;
+    padding: calc(var(--header-height) - 10vh);
+}
+
+.bubbleContainer .bubble {
+    margin-left: calc(var(--header-height) - 10vh);
+}
+
+@keyframes slideIn {
+    0% {
+        left: -215px;
+    }
+    100% {
+        left: -9px
+    }
+}
+
+@keyframes slideOut {
+    0% {
+        left: -9px
+    }
+    100% {
+        left: -215px;
+    }
 }
 
 .window {
